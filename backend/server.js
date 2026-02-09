@@ -1,15 +1,41 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import app from './app.js';
+const express = require('express');
+const MongoStore = require('connect-mongo');
+require('dotenv').config({ path: './.env' });
+const session = require('express-session');
+const app = express();
 
-dotenv.config();
+const port = process.env.PORT || 4000;
+const cors = require('cors');
+const db = require('./db/conn');
 
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('Connected to MongoDB'))
-    .catch((err) => console.error('Error connecting to MongoDB:', err));
+// routes
 
-const PORT = process.env.PORT || 5000;
+app.use(cors(
+    {
+        origin: "http://localhost:5173",
+        methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+        credentials: true,
+        optionsSuccessStatus: 204,
+        allowedHeaders: ["Content-Type", "Authorization"],
+    }
+));
+// app.use(session({
+//     secret: process.env.SESSION_SECRET,
+//     saveUninitialized: false,
+//     resave: false,
+//     store: MongoStore.create({
+//         mongoUrl: process.env.ATLAS_URI
+//     })
+// }));
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.use(express.json());
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+});
+
+app.listen(port, () => {
+    db.connectToServer(function (err) {
+        if (err) console.log(err);
+    });
+    console.log(`SkyOps app listening on port ${port}`);
 });
